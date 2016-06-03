@@ -1,0 +1,56 @@
+---
+title: "Blog Stats"
+author: "Fiverr"
+date: "April 1, 2016"
+output: html_document
+---
+# Initial look into the data
+```{r echo=FALSE , message=FALSE}
+
+library(xlsx)
+library(dplyr)
+library(ggplot2)
+library(GGally)
+file <- "C:/Users/Shobeir/Desktop/Fiverr/20160401/Book1.xlsx"
+mydata <- read.xlsx(file,sheetIndex = 1,colClasses = c("character"))
+mydata <- tbl_df(mydata)
+```
+
+Let's initially, look at the data.
+```{r, echo=FALSE}
+head(mydata)
+```
+In order to get a more meanigful look into the data I will add two more columns: 
+
+1.  `posneg` shows if the **ROI** is higher than the average **ROI**.
+2.  `dweekday` which shows if the data is from weekend or weekday.
+        
+
+```{r echo = FALSE, warning=FALSE}
+mydata = mutate(mydata,posneg = as.factor(ifelse(mydata$ROI > mean(mydata$ROI),"plus","minus")),dweekday = as.factor (ifelse(grepl(pattern = "^S",mydata$Date),"WEnd","WDay")))
+
+gmydata <- group_by(mydata,posneg,dweekday)
+
+a <- summarise(gmydata, meanCost = mean(Cost), meanBounce = mean(Bounce),meanPageSess = mean(Pages...Sesssion),
+               meanSessDuration = mean(Sess.Duration), meanX = mean(X.cover), meanROI = mean(ROI))
+
+```
+Based on the mentioned parameters, I construct a new table based on the average values of the parameters by grouping them into weekday/weekend and Above/Below average ROI.
+
+```{r echo=FALSE}
+a <- tbl_df(a)
+a
+```
+
+
+Let's dig deeper into the data:
+
+
+```{r echo=FALSE,message=FALSE}
+ggpairs(a)
+
+```
+
+# Conclusion:
+
+In conclusion, the main two factors seem to be the `X.Cover` and `Bounce`. There is a very high correlation between `ROI` and `X.Cover`.
